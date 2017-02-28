@@ -17,30 +17,24 @@
 
 import datetime
 import logging
-from django.utils.encoding import python_2_unicode_compatible
 
 import six
-from django.db import models
-from django.utils.translation import ugettext_lazy as _
-from django.contrib.auth.models import User
-from django.core.validators import MaxValueValidator
-from django.core.urlresolvers import reverse
-from django.core.exceptions import ObjectDoesNotExist
-from django.core.exceptions import ValidationError
-from django.core.cache import cache
-from django.core.validators import MinValueValidator
-from sortedm2m.fields import SortedManyToManyField
 
+from django.contrib.auth.models import User
+from django.core.cache import cache
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.core.urlresolvers import reverse
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
+from django.utils.encoding import python_2_unicode_compatible
+from django.utils.translation import ugettext_lazy as _
+from sortedm2m.fields import SortedManyToManyField
 from wger.core.models import DaysOfWeek, RepetitionUnit, WeightUnit
 from wger.exercises.models import Exercise
 from wger.manager.helpers import reps_smart_text
-from wger.utils.cache import (
-    cache_mapper,
-    reset_workout_canonical_form,
-    reset_workout_log
-)
+from wger.utils.cache import (cache_mapper, reset_workout_canonical_form,
+                              reset_workout_log)
 from wger.utils.fields import Html5DateField
-
 
 logger = logging.getLogger(__name__)
 
@@ -325,7 +319,7 @@ class ScheduleStep(models.Model):
 
     duration = models.IntegerField(verbose_name=_('Duration'),
                                    help_text=_('The duration in weeks'),
-                                   default=4,
+                                   default=1,
                                    validators=[MinValueValidator(1), MaxValueValidator(25)])
     '''The duration in weeks'''
 
@@ -530,7 +524,7 @@ class Day(models.Model):
         return {'obj': self,
                 'days_of_week': {
                     'text': u', '.join([six.text_type(_(i.day_of_week))
-                                       for i in tmp_days_of_week]),
+                                        for i in tmp_days_of_week]),
                     'day_list': tmp_days_of_week},
                 'muscles': {
                     'back': muscles_back,
