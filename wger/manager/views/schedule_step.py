@@ -16,27 +16,16 @@
 
 import logging
 
+from django import forms
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core.urlresolvers import reverse
-from django.utils.translation import ugettext_lazy, ugettext as _
 from django.db import models
-from django.forms import ModelForm, ModelChoiceField
-from django.views.generic import (
-    CreateView,
-    DeleteView,
-    UpdateView
-)
-
-from wger.manager.models import (
-    Schedule,
-    ScheduleStep,
-    Workout
-)
-from wger.utils.generic_views import (
-    WgerFormMixin,
-    WgerDeleteMixin
-)
-
+from django.forms import ModelChoiceField, ModelForm
+from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy
+from django.views.generic import CreateView, DeleteView, UpdateView
+from wger.manager.models import Schedule, ScheduleStep, Workout
+from wger.utils.generic_views import WgerDeleteMixin, WgerFormMixin
 
 logger = logging.getLogger(__name__)
 
@@ -58,8 +47,21 @@ class StepCreateView(WgerFormMixin, CreateView, PermissionRequiredMixin):
         have we access to the current user
         '''
 
-        class StepForm(ModelForm):
+        class StepForm(ModelForm, forms.Form):
+            attributes = {'onchange': 'cycleChange()'}
+            weeks = tuple((element, "{} weeks".format(element)) for element in range(1, 53))
             workout = ModelChoiceField(queryset=Workout.objects.filter(user=self.request.user))
+            CYCLE_CHOICE = (
+                ('1', 'Microcycle'),
+                ('2', 'Mesocycle'),
+                ('3', 'Macrocycle'),
+                ('4', 'Custom'),
+            )
+            cycle = forms.ChoiceField(choices=CYCLE_CHOICE, initial=4,
+                                      widget=forms.Select(attrs=attributes))
+            duration = forms.ChoiceField(choices=weeks, initial=1,
+                                         widget=forms.Select(),  help_text=_('The duration in weeks'))
+            field_order = ['workout', 'cycle', 'duration']
 
             class Meta:
                 model = ScheduleStep
